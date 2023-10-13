@@ -1,0 +1,6 @@
+
+project: "drosophila"
+
+path:
+  input: "/home/user/desktop/data-extraction-pipelines/data/rnaseq/sc"
+  output: "/home/user/desktop/data-extraction-pipelines/data/rnaseq/sc/output"
