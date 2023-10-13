@@ -1,4 +1,61 @@
+#!/bin/bash nextflow
+
 # Main entrypoint of the workflow. 
 # Please follow the best practices: 
 # https://snakemake.readthedocs.io/en/stable/snakefiles/best_practices.html,
 # in particular regarding the standardized folder structure mentioned there. 
+
+
+from typing import List, Set
+
+configfile: "../config/config.yaml"
+
+project = config['project']
+rawpath = config['path']['input']
+outpath = config['path']['output']
+
+qc_targets: List[str] = []
+trim_targets: List[str] = []
+stats_targets: List[str] = []
+
+def get_sample_names(path: str) -> Set:
+    fqs: Set[str] = set([f.split("_")[0] for f in os.listdir(path) 
+                        if os.path.isfile(os.path.join(path, f))])
+    return fqs
+
+basenames = get_sample_names(rawpath)
+
+for basename in basenames:
+
+    qc_files =  expand("{outpath}/{project}/qc/fastqc/{basename}_{read}_fastqc.{ext}", 
+                    project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
+    qc_files_trim =  expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed_fastqc.{ext}", 
+                    project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
+    trim_files_n =  expand("{outpath}/{project}/qc/fastp/{basename}.{ext}", 
+                        project=project, outpath=outpath, basename=basename, ext=['html', 'json'])
+    trim_unpaired =  expand("{outpath}/{project}/qc/fastp/{basename}.u{read}.fastqsanger",
+                        project=project, outpath=outpath, basename=basename, read=[1,2])
+    trim_status =  expand("{outpath}/{project}/qc/fastp/{basename}.{status}.fastqsanger",
+                        project=project, outpath=outpath, basename=basename, status=["merged", "failed"])
+    trim_files =    expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed.fastqsanger", 
+                        project=project, outpath=outpath, basename=basename, read=[1,2])
+    stats_files =   expand("{outpath}/{project}/qc/{status}/multiqc_report.html",
+                        project=project, outpath=outpath, status=['trimmed', 'untrimmed'])
+
+    trim_targets.extend(trim_files_n)
+    trim_targets.extend(trim_unpaired)
+    trim_targets.extend(trim_status)
+    trim_targets.extend(trim_files)
+    qc_targets.extend(qc_files)
+    qc_targets.extend(qc_files_trim)
+    stats_targets.extend(stats_files)
+
+
+rule all:
+    input:
+        qc_targets,
+        trim_targets,
+        stats_targets
+
+
+include: "rules/qc.smk"
