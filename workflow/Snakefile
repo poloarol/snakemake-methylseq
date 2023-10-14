@@ -17,6 +17,10 @@ outpath = config['path']['output']
 qc_targets: List[str] = []
 trim_targets: List[str] = []
 stats_targets: List[str] = []
+bwa_targets: List[str] = []
+samtools_targets: List[str] = []
+picard_targets: List[str] = []
+vbid_targets: List[str] = []
 
 def get_sample_names(path: str) -> Set:
     fqs: Set[str] = set([f.split("_")[0] for f in os.listdir(path) 
@@ -27,20 +31,28 @@ basenames = get_sample_names(rawpath)
 
 for basename in basenames:
 
-    qc_files =  expand("{outpath}/{project}/qc/fastqc/{basename}_{read}_fastqc.{ext}", 
+    qc_files = expand("{outpath}/{project}/qc/fastqc/{basename}_{read}_fastqc.{ext}", 
                     project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
-    qc_files_trim =  expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed_fastqc.{ext}", 
-                    project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
-    trim_files_n =  expand("{outpath}/{project}/qc/fastp/{basename}.{ext}", 
+    qc_files_trim = expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed_fastqc.{ext}", 
+                        project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
+    trim_files_n = expand("{outpath}/{project}/qc/fastp/{basename}.{ext}", 
                         project=project, outpath=outpath, basename=basename, ext=['html', 'json'])
-    trim_unpaired =  expand("{outpath}/{project}/qc/fastp/{basename}.u{read}.fastqsanger",
+    trim_unpaired = expand("{outpath}/{project}/qc/fastp/{basename}.u{read}.fastq",
                         project=project, outpath=outpath, basename=basename, read=[1,2])
-    trim_status =  expand("{outpath}/{project}/qc/fastp/{basename}.{status}.fastqsanger",
+    trim_status = expand("{outpath}/{project}/qc/fastp/{basename}.{status}.fastq",
                         project=project, outpath=outpath, basename=basename, status=["merged", "failed"])
-    trim_files =    expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed.fastqsanger", 
-                        project=project, outpath=outpath, basename=basename, read=[1,2])
-    stats_files =   expand("{outpath}/{project}/qc/{status}/multiqc_report.html",
+    trim_files = expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed.fastq", 
+                    project=project, outpath=outpath, basename=basename, read=[1,2])
+    qc_stats_files = expand("{outpath}/{project}/qc/{status}/multiqc_report.html",
                         project=project, outpath=outpath, status=['trimmed', 'untrimmed'])
+    bwa_files = expand("{outpath}/{project}/alignment/bwa/unsorted/{basename}.sam",
+                        outpath=outpath, project=project, basename=basename)
+    sam_files = expand("{outpath}/{project}/alignment/bwa/sorted/{basename}.{ext}",
+                        outpath=outpath, project=project, basename=basename, ext=['bam', 'bai'])
+    picard_files = expand("{outpath}/{project}/alignment/bwa/sorted/picard/{basename}.{ext}",
+                        outpath=outpath, project=project, basename=basename, ext=['bam', 'metrics.txt'])
+    vbid_files = expand("{outpath}/{project}/alignment/bwa/sorted/verify_bam_id/{basename}.{ext}",
+                        outpath=outpath, project=project, basename=basename, ext=['selfsm', 'ancestry'])
 
     trim_targets.extend(trim_files_n)
     trim_targets.extend(trim_unpaired)
@@ -48,14 +60,23 @@ for basename in basenames:
     trim_targets.extend(trim_files)
     qc_targets.extend(qc_files)
     qc_targets.extend(qc_files_trim)
-    stats_targets.extend(stats_files)
+    stats_targets.extend(qc_stats_files)
+    bwa_targets.extend(bwa_files)
+    samtools_targets.extend(sam_files)
+    picard_targets.extend(picard_files)
+    vbid_targets.extend(vbid_files)
 
 
 rule all:
     input:
         qc_targets,
         trim_targets,
-        stats_targets
+        stats_targets,
+        bwa_targets,
+        samtools_targets,
+        picard_targets,
+        # vbid_targets
 
 
 include: "rules/qc.smk"
+include: "rules/align.smk"

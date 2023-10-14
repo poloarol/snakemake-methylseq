@@ -8,7 +8,7 @@
 
 rule fastqc:
     input:
-        os.path.join(rawpath, "{sample}_{read}_subsampled.fastqsanger")
+        os.path.join(rawpath, "{sample}_{read}.fastq")
     output:
         html = "{outpath}/{project}/qc/fastqc/{sample}_{read}_fastqc.html",
         zip = "{outpath}/{project}/qc/fastqc/{sample}_{read}_fastqc.zip"
@@ -22,17 +22,17 @@ rule fastqc:
 
 rule fastp_pe:
     input:
-        sample = [os.path.join(rawpath, "{sample}_1_subsampled.fastqsanger"),
-                    os.path.join(rawpath, "{sample}_2_subsampled.fastqsanger")]
+        sample = [os.path.join(rawpath, "{sample}_1.fastq"),
+                    os.path.join(rawpath, "{sample}_2.fastq")]
     output:
-        trimmed = ["{outpath}/{project}/qc/fastp/{sample}_1.trimmed.fastqsanger",
-            "{outpath}/{project}/qc/fastp/{sample}_2.trimmed.fastqsanger"],
+        trimmed = ["{outpath}/{project}/qc/fastp/{sample}_1.trimmed.fastq",
+            "{outpath}/{project}/qc/fastp/{sample}_2.trimmed.fastq"],
         
-        unpaired1 = "{outpath}/{project}/qc/fastp/{sample}.u1.fastqsanger",
-        unpaired2 = "{outpath}/{project}/qc/fastp/{sample}.u2.fastqsanger",
+        unpaired1 = "{outpath}/{project}/qc/fastp/{sample}.u1.fastq",
+        unpaired2 = "{outpath}/{project}/qc/fastp/{sample}.u2.fastq",
         
-        merged = "{outpath}/{project}/qc/fastp/{sample}.merged.fastqsanger",
-        failed = "{outpath}/{project}/qc/fastp/{sample}.failed.fastqsanger",
+        merged = "{outpath}/{project}/qc/fastp/{sample}.merged.fastq",
+        failed = "{outpath}/{project}/qc/fastp/{sample}.failed.fastq",
         html = "{outpath}/{project}/qc/fastp/{sample}.html",
         json = "{outpath}/{project}/qc/fastp/{sample}.json"
     params:
@@ -44,7 +44,7 @@ rule fastp_pe:
 
 rule fastqc_trimmed:
     input:
-        os.path.join(outpath, "{project}/qc/fastp/{sample}_{read}.trimmed.fastqsanger")
+        os.path.join(outpath, "{project}/qc/fastp/{sample}_{read}.trimmed.fastq")
     output:
         html = "{outpath}/{project}/qc/fastp/{sample}_{read}.trimmed_fastqc.html",
         zip = "{outpath}/{project}/qc/fastp/{sample}_{read}.trimmed_fastqc.zip"

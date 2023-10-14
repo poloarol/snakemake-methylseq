@@ -2,4 +2,4 @@ Your conda installation is not configured to use strict channel priorities. This
 
 snakemake -n --use-conda --conda-frontend conda
 
-snakemake --cores 2 --use-conda --conda-frontend conda
+snakemake --cores 2 --use-conda --conda-frontend conda --latency-wait 2800

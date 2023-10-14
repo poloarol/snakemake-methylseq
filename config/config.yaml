@@ -1,6 +1,9 @@
 
-project: "drosophila"
-
+project: "test-wgs"
+threads: 3
 path:
-  input: "/home/user/desktop/data-extraction-pipelines/data/rnaseq/sc"
-  output: "/home/user/desktop/data-extraction-pipelines/data/rnaseq/sc/output"
+  input: "/home/user/desktop/data/wgbs"
+  output: "/home/user/desktop/data/wgbs/output"
+ref:
+  genome: "/home/user/desktop/utils/hg38/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+  svd_mu: "/home/user/desktop/utils/vbid/ref.100k.hg38.mu"
