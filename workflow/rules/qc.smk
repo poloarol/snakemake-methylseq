@@ -68,6 +68,7 @@ rule multiqc:
         out_raw = "{outpath}/{project}/qc/untrimmed",
         in_trimmed = "{outpath}/{project}/qc/fastp",
         out_trimmed = "{outpath}/{project}/qc/trimmed",
+    conda: "envs/multiqc.yaml"
     shell:
         '''
             #!/bin/bash multiqc

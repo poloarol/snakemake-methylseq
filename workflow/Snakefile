@@ -21,6 +21,8 @@ bwa_targets: List[str] = []
 samtools_targets: List[str] = []
 picard_targets: List[str] = []
 vbid_targets: List[str] = []
+abismal_targets: List[str] = []
+dnm_targets: List[str] = []
 
 def get_sample_names(path: str) -> Set:
     fqs: Set[str] = set([f.split("_")[0] for f in os.listdir(path) 
@@ -32,27 +34,40 @@ basenames = get_sample_names(rawpath)
 for basename in basenames:
 
     qc_files = expand("{outpath}/{project}/qc/fastqc/{basename}_{read}_fastqc.{ext}", 
-                    project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
+                project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
     qc_files_trim = expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed_fastqc.{ext}", 
-                        project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
+                    project=project, outpath=outpath, read=[1,2], ext=["zip", "html"], basename=basename)
     trim_files_n = expand("{outpath}/{project}/qc/fastp/{basename}.{ext}", 
-                        project=project, outpath=outpath, basename=basename, ext=['html', 'json'])
+                    project=project, outpath=outpath, basename=basename, ext=['html', 'json'])
     trim_unpaired = expand("{outpath}/{project}/qc/fastp/{basename}.u{read}.fastq",
-                        project=project, outpath=outpath, basename=basename, read=[1,2])
+                    project=project, outpath=outpath, basename=basename, read=[1,2])
     trim_status = expand("{outpath}/{project}/qc/fastp/{basename}.{status}.fastq",
-                        project=project, outpath=outpath, basename=basename, status=["merged", "failed"])
+                    project=project, outpath=outpath, basename=basename, status=["merged", "failed"])
     trim_files = expand("{outpath}/{project}/qc/fastp/{basename}_{read}.trimmed.fastq", 
                     project=project, outpath=outpath, basename=basename, read=[1,2])
     qc_stats_files = expand("{outpath}/{project}/qc/{status}/multiqc_report.html",
                         project=project, outpath=outpath, status=['trimmed', 'untrimmed'])
     bwa_files = expand("{outpath}/{project}/alignment/bwa/unsorted/{basename}.sam",
-                        outpath=outpath, project=project, basename=basename)
+                    outpath=outpath, project=project, basename=basename)
     sam_files = expand("{outpath}/{project}/alignment/bwa/sorted/{basename}.{ext}",
-                        outpath=outpath, project=project, basename=basename, ext=['bam', 'bai'])
+                     outpath=outpath, project=project, basename=basename, ext=['bam', 'bai'])
     picard_files = expand("{outpath}/{project}/alignment/bwa/sorted/picard/{basename}.{ext}",
-                        outpath=outpath, project=project, basename=basename, ext=['bam', 'metrics.txt'])
+                    outpath=outpath, project=project, basename=basename, ext=['bam', 'metrics.txt'])
     vbid_files = expand("{outpath}/{project}/alignment/bwa/sorted/verify_bam_id/{basename}.{ext}",
-                        outpath=outpath, project=project, basename=basename, ext=['selfsm', 'ancestry'])
+                    outpath=outpath, project=project, basename=basename, ext=['selfsm', 'ancestry'])
+    abismal_bam = expand("{outpath}/{project}/alignment/abismal/{basename}.{ext}",
+                        outpath=outpath, project=project, basename=basename, 
+                        ext=['bam', 'sorted.filtered.bam', 'sorted.bam', 'sorted.bai'])
+    abismal_stats = expand("{outpath}/{project}/alignment/abismal/stats/{basename}.{ext}",
+                        outpath=outpath, project=project, basename=basename, ext=['metrics.yaml', 'filtered.metrics.yaml'])
+    dnm_crate = expand("{outpath}/{project}/methyl/stats/conversion_rate/{basename}.bsrate",
+                    outpath=outpath, project=project, basename=basename)
+    dnm_counts = expand("{outpath}/{project}/methyl/stats/counts/{basename}_{ext}",
+                    outpath=outpath, project=project, basename=basename, 
+                    ext=["single_base.meth", "symmetric.meth", "global.meth"])
+    dnm_meth = expand("{outpath}/{project}/methyl/methylome/{basename}.{ext}",
+                    outpath=outpath, project=project, basename=basename, 
+                    ext=['hmr', 'hypermr', 'epiread', 'sorted.epiread']) #'avg.bed' 'entropy.meth'
 
     trim_targets.extend(trim_files_n)
     trim_targets.extend(trim_unpaired)
@@ -65,6 +80,12 @@ for basename in basenames:
     samtools_targets.extend(sam_files)
     picard_targets.extend(picard_files)
     vbid_targets.extend(vbid_files)
+    abismal_targets.extend(abismal_bam)
+    abismal_targets.extend(abismal_stats)
+    # mbias_targets.extend(mbias_svg)
+    dnm_targets.extend(dnm_crate)
+    dnm_targets.extend(dnm_counts)
+    dnm_targets.extend(dnm_meth)
 
 
 rule all:
@@ -75,8 +96,11 @@ rule all:
         bwa_targets,
         samtools_targets,
         picard_targets,
-        # vbid_targets
+        abismal_targets,
+        # vbid_targets,
+        dnm_targets
 
 
 include: "rules/qc.smk"
 include: "rules/align.smk"
+include: 'rules/calling.smk'
