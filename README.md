@@ -6,7 +6,7 @@ A Snakemake workflow that enables data processing of methylation sequencing plat
 
 ## Workflow
 
-![Pipeline-Workflow][img/snakemake-methylseq-workflow.png]
+![Pipeline-Workflow](img/snakemake-methylseq-workflow.png)
 
 ### Quality Control
 1. FastQC
