@@ -76,7 +76,7 @@ rule abismal_index:
         "v2.6.0/bio/samtools/index"
 
 
-rule align_filter:
+rule abismal_filter:
     input:
         bam = "{outpath}/{project}/alignment/abismal/{sample}.sorted.bam"
     output:

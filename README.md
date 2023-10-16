@@ -103,6 +103,40 @@ Two methods are employed;
 - Genome (hg38)
 - Canonical cis-Regulatory elements
 
+## Usage
+
+Set-up working conda environment `conda create --name <envname> --file requirements.txt`
+NB: 
+    - The above step asumes you have conda already installed.
+    - This workflow was built on Ubuntu20.04. Other platforms were not tested.
+
+launch the pipeline form within the `<snakemake-methylseq>\<workflow>` directory
+
+### Test
+
+All Rules: `bash run_test.sh all`
+
+1. Quality Control
+    `bash run.sh qc`
+2. Alignment 
+    - bwa-meth: `bash run.sh alignment bwa`
+    - abismal:  `bash run.sh alignment abismal`
+
+3. Methylation Analysis
+    - DNMTools: `bash run.sh methyl dnmtools`
+    - MethylDackel: `bash run.sh methyl methyldackel`
+
+### Run workflows
+1. Quality Control
+    `bash run.sh qc - <num_cores>`
+2. Alignment 
+    - bwa-meth: `bash run.sh alignment bwa`
+    - abismal:  `bash run.sh alignment abismal`
+
+3. Methylation Analysis
+    - DNMTools: `bash run.sh methyl dnmtools`
+    - MethylDackel: `bash run.sh methyl methyldackel`
+
 # TODO
 
 - Add script to download and index reference files
@@ -111,3 +145,5 @@ Two methods are employed;
 - Work on the format conversion between abismal and bwa-meth
 - Fix errors from rules `entropy` and `avg_meth_level_region`
 - Provide PC plots for contamination of samples
+- Add notes on updating the config file
+- Add documentation on rules and their purpose
