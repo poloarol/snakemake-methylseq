@@ -8,7 +8,7 @@
 
 threads: int = config['threads']
 
-rule alignment:
+rule align_bwa:
     input:
         read1 = os.path.join(outpath, "{project}/qc/fastp/{sample}_1.trimmed.fastq"),
         read2 = os.path.join(outpath, "{project}/qc/fastp/{sample}_2.trimmed.fastq")
@@ -93,7 +93,7 @@ rule align_filter:
         dnmtools uniq -S {output.stats} {input.bam} {output.bam}
         '''
 
-rule samtools_sort:
+rule samtools_sort_bwa:
     input:
         "{outpath}/{project}/alignment/bwa/unsorted/{sample}.sam",
     output:
@@ -105,7 +105,7 @@ rule samtools_sort:
         "v2.6.0/bio/samtools/sort"
 
 
-rule samtools_index:
+rule samtools_index_bwa:
     input:
         "{outpath}/{project}/alignment/bwa/sorted/{sample}.bam"
     output:
@@ -117,7 +117,7 @@ rule samtools_index:
         "v2.6.0/bio/samtools/index"
 
 
-rule markduplicates_bam:
+rule markduplicates_bam_bwa:
     input:
         bams = "{outpath}/{project}/alignment/bwa/sorted/{sample}.bam",
     # optional to specify a list of BAMs; this has the same effect
@@ -140,7 +140,28 @@ rule markduplicates_bam:
         "v2.6.0/bio/picard/markduplicates"
 
 
-rule verify_bam_id:
+rule verify_bam_id_abismal:
+    input:
+        bam = "{outpath}/{project}/alignment/abismal/{sample}.sorted.filtered.bam",
+        ref = config['ref']['genome'],
+        # optional - this can be used to specify custom resource files if
+        # necessary (if using GRCh37 or GRCh38 instead simply specify
+        # params.genome_build="38", for example)
+        # N.B. if svd_mu={prefix}.mu, then {prefix}.bed, {prefix}.UD, and
+        # {prefix}.V must also exist
+        svd_mu=config['ref']['svd_mu'],
+    output:
+        selfsm = "{outpath}/{project}/alignment/abismal/verify_bam_id/{sample}.selfsm",
+        ancestry = "{outpath}/{project}/alignment/abismal/verify_bam_id/{sample}.ancestry",
+    params:
+        # optional - see note for input.svd_mu
+        # current choices are {37,38}
+        genome_build="38",
+    wrapper:
+        "v2.6.0/bio/verifybamid/verifybamid2"
+
+
+rule verify_bam_id_bwa:
     input:
         bam = "{outpath}/{project}/alignment/bwa/sorted/picard/{sample}.bam",
         ref = config['ref']['genome'],

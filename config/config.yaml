@@ -6,4 +6,6 @@ path:
   output: "/home/user/desktop/data/wgbs/output"
 ref:
   genome: "/home/user/desktop/utils/hg38/GRCh38_full_analysis_set_plus_decoy_hla.fa"
+  abismal: "/home/user/desktop/utils/hg38/GRCh38_full_analysis_set_plus_decoy_hla.abismalidx"
   svd_mu: "/home/user/desktop/utils/vbid/ref.100k.hg38.mu"
+  region: "/home/user/desktop/utils/cCREs/GRCh38-cCREs.sorted.bed"
